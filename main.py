@@ -1,6 +1,7 @@
 import time
 
 import requests
+import telegram
 from requests.exceptions import ConnectionError, ReadTimeout
 
 from settings import Settings
@@ -22,6 +23,7 @@ def get_list_reviews() -> dict:
 def get_list_reviews_with_long_polling() -> None:
     """Get list reviews with long polling from dvmn API."""
     session, settings = prepare_script_environment(settings=Settings())
+    bot = telegram.Bot(token=settings.TG_BOT_TOKEN)
     dvmn_url = f"{settings.DVMN_API_URL}" \
                f"{settings.DVMN_API_URI_REVIEWS_LONG_POLLING}"
     headers = {
@@ -50,7 +52,30 @@ def get_list_reviews_with_long_polling() -> None:
                 list_reviews_with_long_polling.raise_for_status()
 
             if status == "found":
-                print("Found\n")
+                bot.send_message(
+                    chat_id=settings.TG_CHAT_ID,
+                    text="Преподаватель проверил работу!"
+                )
+                last_review = get_list_reviews()["results"][0]
+                negative_result = "К сожалению, в работе нашлись ошибки!"
+                positive_result = """Преподавателю все понравилось, можно
+                                приступать к следующему уроку!
+                """
+                review_result_message = negative_result \
+                    if last_review["is_negative"] \
+                    else positive_result
+                message = f"""У Вас проверили работу
+                        «{last_review["lesson_title"]}».
+                        {review_result_message}
+                        {last_review["lesson_url"]}
+                """
+                bot.send_message(
+                    chat_id=settings.TG_CHAT_ID,
+                    text=message
+                )
+
+        except telegram.error.NetworkError as err:
+            print(f"Что-то пошло не так :( {err}")
 
         except ReadTimeout as err:
             print(f"Ошибка чтения по тайм-ауту: {err}")
@@ -61,5 +86,4 @@ def get_list_reviews_with_long_polling() -> None:
 
 
 if __name__ == "__main__":
-    get_list_reviews()
     get_list_reviews_with_long_polling()

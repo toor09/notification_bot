@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     RETRY_COUNT: int = 5
     STATUS_FORCE_LIST: str = "429,500,502,503,504"
     ALLOWED_METHODS: str = "HEAD,GET,OPTIONS"
+    TG_BOT_TOKEN: str
+    TG_CHAT_ID: str
 
     @validator("STATUS_FORCE_LIST")
     def status_force_list(cls, v: str) -> List[int]:
