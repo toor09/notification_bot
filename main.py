@@ -2,7 +2,7 @@ import time
 
 import requests
 import telegram
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import ConnectionError
 
 from settings import Settings
 from utils import prepare_script_environment
@@ -34,6 +34,7 @@ def get_list_reviews_with_long_polling() -> None:
             list_reviews = session.get(
                 url=dvmn_url,
                 headers=headers,
+                timeout=settings.READ_TIMEOUT,
             )
             list_reviews.raise_for_status()
             list_reviews = list_reviews.json()
@@ -49,17 +50,14 @@ def get_list_reviews_with_long_polling() -> None:
                     url=dvmn_url,
                     headers=headers,
                     params=params,
+                    timeout=settings.READ_TIMEOUT,
                 )
-                print("Эх, но пока ничего (:")
             if status == "found":
                 session.get(
                     url=dvmn_url,
                     headers=headers,
                     params=params,
-                )
-                bot.send_message(
-                    chat_id=settings.TG_CHAT_ID,
-                    text="Преподаватель проверил работу!"
+                    timeout=settings.READ_TIMEOUT,
                 )
                 last_review = list_reviews["new_attempts"][0]  # type: ignore
                 negative_result = "К сожалению, в работе нашлись ошибки!"
@@ -81,9 +79,6 @@ def get_list_reviews_with_long_polling() -> None:
 
         except telegram.error.NetworkError as err:
             print(f"Что-то пошло не так :( {err}")
-
-        except ReadTimeout as err:
-            print(f"Ошибка чтения по тайм-ауту: {err}")
 
         except ConnectionError as err:
             print(f"Ошибка подключения :( {err}")

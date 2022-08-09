@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DVMN_API_URL: AnyHttpUrl
     DVMN_API_URI_REVIEWS: str
     DVMN_API_URI_REVIEWS_LONG_POLLING: str
+    READ_TIMEOUT: int = 180
     TIMEOUT: int = 10
     RETRY_COUNT: int = 5
     STATUS_FORCE_LIST: str = "429,500,502,503,504"

@@ -42,6 +42,7 @@ cp .env.example .env
     DVMN_API_URL=https://dvmn.org
     DVMN_API_URI_REVIEWS=/api/user_reviews/
     DVMN_API_URI_REVIEWS_LONG_POLLING=/api/long_polling/
+    READ_TIMEOUT=180
     TIMEOUT=10
     RETRY_COUNT=5
     STATUS_FORCE_LIST=429,500,502,503,504
