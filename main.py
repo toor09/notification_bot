@@ -36,11 +36,13 @@ def get_list_reviews_with_long_polling() -> None:
                 headers=headers,
             )
             list_reviews.raise_for_status()
-            status = list_reviews.json().get("status")
+            list_reviews = list_reviews.json()
+            status = list_reviews["status"]  # type: ignore
 
             if status == "timeout":
-                timestamp_to_request = list_reviews.json(
-                ).get("timestamp_to_request")
+                timestamp_to_request = list_reviews[
+                    "timestamp_to_request"
+                ]  # type: ignore
                 params = {
                     "timestamp": timestamp_to_request,
                 }
