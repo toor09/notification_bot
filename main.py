@@ -31,25 +31,25 @@ def get_list_reviews_with_long_polling() -> None:
     }
     while True:
         try:
-            list_reviews_with_long_polling = session.get(
+            list_reviews = session.get(
                 url=dvmn_url,
                 headers=headers,
             )
-            list_reviews_with_long_polling.raise_for_status()
-            status = list_reviews_with_long_polling.json().get("status")
+            list_reviews.raise_for_status()
+            status = list_reviews.json().get("status")
 
             if status == "timeout":
-                timestamp_to_request = list_reviews_with_long_polling.json(
+                timestamp_to_request = list_reviews.json(
                 ).get("timestamp_to_request")
                 params = {
                     "timestamp": timestamp_to_request,
                 }
-                list_reviews_with_long_polling = session.get(
+                list_reviews = session.get(
                     url=dvmn_url,
                     headers=headers,
                     params=params,
                 )
-                list_reviews_with_long_polling.raise_for_status()
+                list_reviews.raise_for_status()
 
             if status == "found":
                 bot.send_message(
