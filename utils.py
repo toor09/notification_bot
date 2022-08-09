@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -7,10 +5,10 @@ from requests.packages.urllib3.util.retry import Retry
 from settings import Settings
 
 
-def prepare_script_environment(
+def get_session(
         settings: Settings
-) -> Tuple[requests.Session, Settings]:
-    """Prepare environment and create request session with retry strategy."""
+) -> requests.Session:
+    """Get new request session with retry strategy."""
 
     retry_strategy = Retry(
         total=settings.RETRY_COUNT,
@@ -22,4 +20,4 @@ def prepare_script_environment(
     session = requests.Session()
     session.mount("https://", adapter)
     session.mount("http://", adapter)
-    return session, settings
+    return session

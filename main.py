@@ -5,7 +5,7 @@ import telegram
 from requests.exceptions import ConnectionError
 
 from settings import Settings
-from utils import prepare_script_environment
+from utils import get_session
 
 
 def get_list_reviews() -> dict:
@@ -22,7 +22,8 @@ def get_list_reviews() -> dict:
 
 def get_list_reviews_with_long_polling() -> None:
     """Get list reviews with long polling from dvmn API."""
-    session, settings = prepare_script_environment(settings=Settings())
+    settings = Settings()
+    session = get_session(settings=settings)
     bot = telegram.Bot(token=settings.TG_BOT_TOKEN)
     dvmn_url = f"{settings.DVMN_API_URL}" \
                f"{settings.DVMN_API_URI_REVIEWS_LONG_POLLING}"
