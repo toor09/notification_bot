@@ -38,27 +38,30 @@ def get_list_reviews_with_long_polling() -> None:
             list_reviews.raise_for_status()
             list_reviews = list_reviews.json()
             status = list_reviews["status"]  # type: ignore
-
+            timestamp_to_request = list_reviews[
+                "timestamp_to_request"
+            ]  # type: ignore
+            params = {
+                "timestamp": timestamp_to_request,
+            }
             if status == "timeout":
-                timestamp_to_request = list_reviews[
-                    "timestamp_to_request"
-                ]  # type: ignore
-                params = {
-                    "timestamp": timestamp_to_request,
-                }
-                list_reviews = session.get(
+                session.get(
                     url=dvmn_url,
                     headers=headers,
                     params=params,
                 )
-                list_reviews.raise_for_status()
-
+                print("Эх, но пока ничего (:")
             if status == "found":
+                session.get(
+                    url=dvmn_url,
+                    headers=headers,
+                    params=params,
+                )
                 bot.send_message(
                     chat_id=settings.TG_CHAT_ID,
                     text="Преподаватель проверил работу!"
                 )
-                last_review = get_list_reviews()["results"][0]
+                last_review = list_reviews["new_attempts"][0]  # type: ignore
                 negative_result = "К сожалению, в работе нашлись ошибки!"
                 positive_result = """Преподавателю все понравилось, можно
                                 приступать к следующему уроку!
