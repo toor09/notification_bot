@@ -1,23 +1,10 @@
 import time
 
-import requests
 import telegram
 from requests.exceptions import ConnectionError
 
 from settings import Settings
 from utils import get_session
-
-
-def get_list_reviews() -> dict:
-    """Get list reviews from dvmn API."""
-    settings = Settings()
-    dvmn_url = f"{settings.DVMN_API_URL}{settings.DVMN_API_URI_REVIEWS}"
-    headers = {
-        "Authorization": f"Token {settings.DVMN_API_TOKEN}"
-    }
-    list_reviews = requests.get(url=dvmn_url, headers=headers)
-    list_reviews.raise_for_status()
-    return list_reviews.json()
 
 
 def get_list_reviews_with_long_polling() -> None:
