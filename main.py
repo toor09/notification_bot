@@ -7,8 +7,8 @@ from settings import Settings
 from utils import get_session
 
 
-def get_list_reviews_with_long_polling() -> None:
-    """Get list reviews with long polling from dvmn API."""
+def get_lesson_reviews() -> None:
+    """Get lesson reviews with long polling from dvmn API."""
     settings = Settings()
     session = get_session(settings=settings)
     bot = telegram.Bot(token=settings.TG_BOT_TOKEN)
@@ -17,37 +17,35 @@ def get_list_reviews_with_long_polling() -> None:
     headers = {
         "Authorization": f"Token {settings.DVMN_API_TOKEN}"
     }
+    params = None
+
     while True:
         try:
-            list_reviews = session.get(
+            lesson_reviews = session.get(
                 url=dvmn_url,
                 headers=headers,
+                params=params,
                 timeout=settings.READ_TIMEOUT,
             )
-            list_reviews.raise_for_status()
-            list_reviews = list_reviews.json()
-            status = list_reviews["status"]  # type: ignore
-            timestamp_to_request = list_reviews[
-                "timestamp_to_request"
-            ]  # type: ignore
-            params = {
-                "timestamp": timestamp_to_request,
-            }
+            lesson_reviews.raise_for_status()
+            lesson_reviews = lesson_reviews.json()
+            status = lesson_reviews["status"]  # type: ignore
+
             if status == "timeout":
-                session.get(
-                    url=dvmn_url,
-                    headers=headers,
-                    params=params,
-                    timeout=settings.READ_TIMEOUT,
-                )
+                timestamp_to_request = lesson_reviews[
+                    "timestamp_to_request"
+                ]  # type: ignore
+                params = {
+                    "timestamp": timestamp_to_request,
+                }
             if status == "found":
-                session.get(
-                    url=dvmn_url,
-                    headers=headers,
-                    params=params,
-                    timeout=settings.READ_TIMEOUT,
-                )
-                last_review = list_reviews["new_attempts"][0]  # type: ignore
+                timestamp_to_request = lesson_reviews[
+                    "last_attempt_timestamp"
+                ]   # type: ignore
+                params = {
+                    "timestamp": timestamp_to_request,
+                }
+                last_review = lesson_reviews["new_attempts"][0]  # type: ignore
                 negative_result = "К сожалению, в работе нашлись ошибки!"
                 positive_result = """Преподавателю все понравилось, можно
                                 приступать к следующему уроку!
@@ -74,4 +72,4 @@ def get_list_reviews_with_long_polling() -> None:
 
 
 if __name__ == "__main__":
-    get_list_reviews_with_long_polling()
+    get_lesson_reviews()
