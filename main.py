@@ -1,7 +1,7 @@
 import time
 
 import telegram
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, ReadTimeout
 
 from settings import Settings
 from utils import get_session
@@ -28,47 +28,52 @@ def get_lesson_reviews() -> None:
                 timeout=settings.READ_TIMEOUT,
             )
             lesson_reviews.raise_for_status()
-            lesson_reviews = lesson_reviews.json()
-            status = lesson_reviews["status"]  # type: ignore
 
-            if status == "timeout":
-                timestamp_to_request = lesson_reviews[
-                    "timestamp_to_request"
-                ]  # type: ignore
-                params = {
-                    "timestamp": timestamp_to_request,
-                }
-            if status == "found":
-                timestamp_to_request = lesson_reviews[
-                    "last_attempt_timestamp"
-                ]   # type: ignore
-                params = {
-                    "timestamp": timestamp_to_request,
-                }
-                last_review = lesson_reviews["new_attempts"][0]  # type: ignore
-                negative_result = "К сожалению, в работе нашлись ошибки!"
-                positive_result = """Преподавателю все понравилось, можно
-                                приступать к следующему уроку!
-                """
-                review_result_message = negative_result \
-                    if last_review["is_negative"] \
-                    else positive_result
-                message = f"""У Вас проверили работу
-                        «{last_review["lesson_title"]}».
-                        {review_result_message}
-                        {last_review["lesson_url"]}
-                """
-                bot.send_message(
-                    chat_id=settings.TG_CHAT_ID,
-                    text=message
-                )
-
-        except telegram.error.NetworkError as err:
-            print(f"Что-то пошло не так :( {err}")
+        except ReadTimeout:
+            continue
 
         except ConnectionError as err:
             print(f"Ошибка подключения :( {err}")
             time.sleep(settings.TIMEOUT)
+            continue
+
+        lesson_reviews = lesson_reviews.json()
+        status = lesson_reviews["status"]  # type: ignore
+
+        if status == "timeout":
+            timestamp_to_request = lesson_reviews[
+                "timestamp_to_request"
+            ]  # type: ignore
+            params = {
+                "timestamp": timestamp_to_request,
+            }
+        if status == "found":
+            timestamp_to_request = lesson_reviews[
+                "last_attempt_timestamp"
+            ]   # type: ignore
+            params = {
+                "timestamp": timestamp_to_request,
+            }
+            last_review = lesson_reviews["new_attempts"][0]  # type: ignore
+            negative_result = "К сожалению, в работе нашлись ошибки!"
+            positive_result = """Преподавателю все понравилось, можно
+                            приступать к следующему уроку!
+            """
+            review_result_message = negative_result \
+                if last_review["is_negative"] \
+                else positive_result
+            message = f"""У Вас проверили работу
+                    «{last_review["lesson_title"]}».
+                    {review_result_message}
+                    {last_review["lesson_url"]}
+            """
+            try:
+                bot.send_message(
+                    chat_id=settings.TG_CHAT_ID,
+                    text=message
+                )
+            except telegram.error.NetworkError as err:
+                print(f"Что-то пошло не так :( {err}")
 
 
 if __name__ == "__main__":
