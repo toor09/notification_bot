@@ -49,6 +49,7 @@ cp .env.example .env
     ALLOWED_METHODS=HEAD,GET,OPTIONS
     TG_BOT_TOKEN=
     TG_CHAT_ID=
+    LOGGING_LEVEL=ERROR
   </pre>
 </details>
 

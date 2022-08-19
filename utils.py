@@ -1,8 +1,21 @@
+import textwrap
+
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from settings import Settings
+
+
+def correct_textwrap_dedent(multiline_message: str) -> str:
+    """Correct textwrap dedent."""
+    message = "\n".join(
+        [
+            textwrap.dedent(line_message)
+            for line_message in multiline_message.split("\n")
+        ]
+    )
+    return message
 
 
 def get_session(
