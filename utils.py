@@ -1,10 +1,24 @@
+import logging
 import textwrap
 
 import requests
+import telegram
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from settings import Settings
+
+
+class TelegramLogsHandler(logging.Handler):
+    """Custom telegram handler for logging."""
+    def __init__(self, tg_bot: telegram.Bot, chat_id: str) -> None:
+        super().__init__()
+        self.chat_id = chat_id
+        self.tg_bot = tg_bot
+
+    def emit(self, record: logging.LogRecord) -> None:
+        log_entry = self.format(record)
+        self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
 
 
 def correct_textwrap_dedent(multiline_message: str) -> str:

@@ -5,15 +5,19 @@ import telegram
 from requests.exceptions import ConnectionError, ReadTimeout
 
 from settings import Settings
-from utils import correct_textwrap_dedent, get_session
+from utils import TelegramLogsHandler, correct_textwrap_dedent, get_session
 
 
 def get_lesson_reviews() -> None:
     """Get lesson reviews with long polling from dvmn API."""
     settings = Settings()
     session = get_session(settings=settings)
-    logger = logging.getLogger("get_lesson_reviews")
     bot = telegram.Bot(token=settings.TG_BOT_TOKEN)
+    logger = logging.getLogger("get_lesson_reviews")
+    logger.setLevel(settings.LOGGING_LEVEL)
+    logger.addHandler(
+        TelegramLogsHandler(tg_bot=bot, chat_id=settings.TG_CHAT_ID)
+    )
     dvmn_url = f"{settings.DVMN_API_URL}" \
                f"{settings.DVMN_API_URI_REVIEWS_LONG_POLLING}"
     headers = {
