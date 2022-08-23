@@ -1,12 +1,13 @@
 import logging
 import logging.config
+import sys
 import time
 
 import telegram
 from requests.exceptions import ConnectionError, ReadTimeout
 
-from settings import LOGGING_CONFIG, Settings
-from utils import TelegramLogsHandler, get_session
+from settings import Settings
+from utils import get_session
 
 
 def get_lesson_reviews() -> None:
@@ -15,12 +16,48 @@ def get_lesson_reviews() -> None:
     session = get_session(settings=settings)
     bot = telegram.Bot(token=settings.TG_BOT_TOKEN)
 
+    logging_config = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            },
+        },
+        "handlers": {
+            "default": {
+                "level": settings.LOGGING_LEVEL,
+                "formatter": "standard",
+                "class": "logging.StreamHandler",
+                "stream": sys.stderr,
+            },
+            "rotating_to_file": {
+                "level": settings.LOGGING_LEVEL,
+                "class": "logging.handlers.RotatingFileHandler",
+                "formatter": "standard",
+                "filename": "notification_bot.log",
+                "maxBytes": 10000,
+                "backupCount": 10,
+            },
+            "telegram_bot": {
+                "class": "utils.TelegramLogsHandler",
+                "tg_bot": bot,
+                "chat_id": settings.TG_CHAT_ID,
+                "level": settings.LOGGING_LEVEL,
+                "formatter": "standard",
+            }
+        },
+        "loggers": {
+            "get_lesson_reviews": {
+                "handlers": ["default", "rotating_to_file", "telegram_bot"],
+                "level": settings.LOGGING_LEVEL,
+                "propagate": True
+            }
+        }
+    }
+    logging.config.dictConfig(logging_config)
     logger = logging.getLogger("get_lesson_reviews")
-    logging.config.dictConfig(LOGGING_CONFIG)
-    logger.setLevel(settings.LOGGING_LEVEL)
-    logger.addHandler(
-        TelegramLogsHandler(tg_bot=bot, chat_id=settings.TG_CHAT_ID)
-    )
+
     dvmn_url = f"{settings.DVMN_API_URL}" \
                f"{settings.DVMN_API_URI_REVIEWS_LONG_POLLING}"
     headers = {

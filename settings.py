@@ -1,4 +1,3 @@
-import sys
 from typing import List
 
 from pydantic import AnyHttpUrl, BaseSettings, validator
@@ -41,37 +40,3 @@ class Settings(BaseSettings):
     class Config:
         case_sensitive = True
         env_file = ".env"
-
-
-LOGGING_CONFIG = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {
-            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-        },
-    },
-    "handlers": {
-        "default": {
-            "level": Settings().LOGGING_LEVEL,
-            "formatter": "standard",
-            "class": "logging.StreamHandler",
-            "stream":  sys.stderr,
-        },
-        "rotating_to_file": {
-            "level": Settings().LOGGING_LEVEL,
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "standard",
-            "filename": "notification_bot.log",
-            "maxBytes": 10000,
-            "backupCount": 10,
-        },
-    },
-    "loggers": {
-        "": {
-            "handlers": ["default", "rotating_to_file"],
-            "level": Settings().LOGGING_LEVEL,
-            "propagate": True
-        }
-    }
-}
