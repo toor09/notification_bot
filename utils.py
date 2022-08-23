@@ -1,5 +1,4 @@
 import logging
-import textwrap
 
 import requests
 import telegram
@@ -19,17 +18,6 @@ class TelegramLogsHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         log_entry = self.format(record)
         self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
-
-
-def correct_textwrap_dedent(multiline_message: str) -> str:
-    """Correct textwrap dedent."""
-    message = "\n".join(
-        [
-            textwrap.dedent(line_message)
-            for line_message in multiline_message.split("\n")
-        ]
-    )
-    return message
 
 
 def get_session(

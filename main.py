@@ -6,7 +6,7 @@ import telegram
 from requests.exceptions import ConnectionError, ReadTimeout
 
 from settings import LOGGING_CONFIG, Settings
-from utils import TelegramLogsHandler, correct_textwrap_dedent, get_session
+from utils import TelegramLogsHandler, get_session
 
 
 def get_lesson_reviews() -> None:
@@ -37,10 +37,9 @@ def get_lesson_reviews() -> None:
                 timeout=settings.READ_TIMEOUT,
             )
             lesson_reviews.raise_for_status()
-            message = f"""{lesson_reviews.request.url=}
-                    {lesson_reviews.status_code=}
-            """
-            logger.debug(msg=correct_textwrap_dedent(message))
+            message = f"{lesson_reviews.request.url=} " \
+                      f"{lesson_reviews.status_code=}"
+            logger.debug(msg=message)
         except ReadTimeout:
             message = "Тайм-аут по чтению..."
             logger.error(msg=message)
@@ -80,18 +79,14 @@ def get_lesson_reviews() -> None:
 
             last_review = lesson_reviews["new_attempts"][0]  # type: ignore
             negative_result = "К сожалению, в работе нашлись ошибки!"
-            positive_result = """Преподавателю все понравилось, можно
-                            приступать к следующему уроку!
-            """
+            positive_result = "Преподавателю все понравилось, можно " \
+                              "приступать к следующему уроку!"
             review_result_message = negative_result \
                 if last_review["is_negative"] \
                 else positive_result
-            message = f"""У Вас проверили работу
-                    «{last_review["lesson_title"]}».
-                    {review_result_message}
-                    {last_review["lesson_url"]}
-            """
-            message = correct_textwrap_dedent(message)
+            message = f"У Вас проверили работу " \
+                      f"«{last_review['lesson_title']}». " \
+                      f"{review_result_message}{last_review['lesson_url']}"
             logger.debug(msg=message)
             try:
                 bot.send_message(
