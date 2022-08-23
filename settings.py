@@ -1,4 +1,3 @@
-import logging.config
 import sys
 from typing import List
 
@@ -76,5 +75,3 @@ LOGGING_CONFIG = {
         }
     }
 }
-
-logging.config.dictConfig(LOGGING_CONFIG)

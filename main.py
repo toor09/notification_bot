@@ -1,10 +1,11 @@
 import logging
+import logging.config
 import time
 
 import telegram
 from requests.exceptions import ConnectionError, ReadTimeout
 
-from settings import Settings
+from settings import LOGGING_CONFIG, Settings
 from utils import TelegramLogsHandler, correct_textwrap_dedent, get_session
 
 
@@ -13,7 +14,9 @@ def get_lesson_reviews() -> None:
     settings = Settings()
     session = get_session(settings=settings)
     bot = telegram.Bot(token=settings.TG_BOT_TOKEN)
+
     logger = logging.getLogger("get_lesson_reviews")
+    logging.config.dictConfig(LOGGING_CONFIG)
     logger.setLevel(settings.LOGGING_LEVEL)
     logger.addHandler(
         TelegramLogsHandler(tg_bot=bot, chat_id=settings.TG_CHAT_ID)
