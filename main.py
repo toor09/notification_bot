@@ -81,7 +81,7 @@ def get_lesson_reviews() -> None:
                 else positive_result
             message = f"У Вас проверили работу " \
                       f"«{last_review['lesson_title']}». " \
-                      f"{review_result_message}{last_review['lesson_url']}"
+                      f"{review_result_message} {last_review['lesson_url']}"
             logger.debug(msg=message)
             try:
                 bot.send_message(
